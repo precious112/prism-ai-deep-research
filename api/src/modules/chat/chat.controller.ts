@@ -20,7 +20,16 @@ export const deleteChatController = catchAsync(async (req: Request, res: Respons
 });
 
 export const addMessageController = catchAsync(async (req: Request, res: Response) => {
-  const message = await addMessage(req.params.id, req.user!.id, req.body.content, req.body.role);
+  const message = await addMessage(
+    req.params.id,
+    req.user!.id,
+    req.body.content,
+    req.body.role,
+    {
+      model: req.body.model,
+      apiKey: req.body.apiKey,
+    }
+  );
   sendSuccess(res, { message }, 201);
 });
 

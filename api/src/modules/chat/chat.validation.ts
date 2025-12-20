@@ -17,6 +17,8 @@ export const createMessageSchema = z.object({
   body: z.object({
     content: z.string().min(1),
     role: z.enum(["user", "assistant", "system"]).optional(),
+    model: z.string().optional(),
+    apiKey: z.string().optional(),
   }),
 });
 

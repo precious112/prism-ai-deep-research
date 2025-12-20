@@ -1,5 +1,6 @@
 import { prisma } from "../../utils/prisma";
 import AppError from "../../utils/AppError";
+import redisClient from "../../utils/redis";
 
 export const createChat = async (userId: string, data: { title?: string, organizationId?: string }) => {
   return await prisma.chat.create({
@@ -42,15 +43,21 @@ export const deleteChat = async (chatId: string, userId: string) => {
   await prisma.chat.delete({ where: { id: chatId } });
 };
 
-export const addMessage = async (chatId: string, userId: string | null, content: string, role: string = "user") => {
+export const addMessage = async (
+  chatId: string,
+  userId: string | null,
+  content: string,
+  role: string = "user",
+  config?: { model?: string; apiKey?: string }
+) => {
   if (userId) {
-     // Check handled by middleware
+    // Check handled by middleware
   } else {
     const chat = await prisma.chat.findUnique({ where: { id: chatId } });
     if (!chat) throw new AppError(404, "Chat not found");
   }
 
-  return await prisma.$transaction(async (tx: any) => {
+  const result = await prisma.$transaction(async (tx: any) => {
     const message = await tx.message.create({
       data: {
         chatId,
@@ -60,8 +67,9 @@ export const addMessage = async (chatId: string, userId: string | null, content:
       },
     });
 
+    let researchRequest = null;
     if (role === "user") {
-      await tx.researchRequest.create({
+      researchRequest = await tx.researchRequest.create({
         data: {
           messageId: message.id,
           status: "PENDING",
@@ -69,8 +77,21 @@ export const addMessage = async (chatId: string, userId: string | null, content:
       });
     }
 
-    return message;
+    return { message, researchRequest };
   });
+
+  if (result.researchRequest) {
+    await redisClient.publish(
+      "research_tasks",
+      JSON.stringify({
+        requestId: result.researchRequest.id,
+        query: content,
+        config: config || {},
+      })
+    );
+  }
+
+  return result.message;
 };
 
 export const getMessages = async (chatId: string, userId: string, page: number = 1, limit: number = 20) => {
