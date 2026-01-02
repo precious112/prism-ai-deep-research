@@ -31,8 +31,16 @@ class IllustrationTool:
         decision = await self._decide_strategy(topic, description)
         print(f"Illustration strategy for '{topic}': {decision.visualization_type}")
         
-        # We skip the check for "search" vs "generate" and go straight to generation
-        return await self._generate_visualization(decision)
+        # 2. Generate initial visualization
+        result = await self._generate_visualization(decision)
+        
+        # 3. Verify and Fix (One-time verification)
+        if result and result.get("type") == "code":
+            original_code = result["content"]
+            verified_code = await self._verify_and_fix_code(original_code, decision, topic, description)
+            result["content"] = verified_code
+            
+        return result
 
     async def _decide_strategy(self, topic: str, description: str) -> IllustrationDecision:
         prompt = ChatPromptTemplate.from_messages([
@@ -98,3 +106,49 @@ class IllustrationTool:
             content = content[:-3]
             
         return {"type": "code", "content": content.strip()}
+
+    async def _verify_and_fix_code(self, code: str, decision: IllustrationDecision, topic: str, description: str) -> str:
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are a Quality Assurance expert for data visualization code.
+            Your goal is to ensure the code is BUG-FREE, COMPLETE, and HELPFUL.
+            
+            Review the following HTML/JS code for a {lib} visualization.
+            
+            CONTEXT:
+            Topic: {topic}
+            Description: {description}
+            Code Prompt: {code_prompt}
+            
+            CHECKLIST:
+            1. **Syntax**: Are there unclosed tags, syntax errors, or invalid library usage?
+            2. **Completeness**: Are there missing components, labels, legends, or placeholder comments (e.g., "// add data here")? The visualization MUST be fully functional with mock data if necessary.
+            3. **Relevance**: Does the visualization effectively convey the information described in the context?
+            4. **Responsiveness**: Does it use window dimensions (window.innerWidth) or 100% width/height? (No hardcoded pixel widths > 500px).
+            
+            INSTRUCTIONS:
+            - If the code is perfect, output it EXACTLY as is.
+            - If there are ANY issues (especially missing completeness or syntax errors), FIX them and output the FULL CORRECTED code.
+            - Output ONLY the HTML code. Do not use markdown fences.
+            """),
+            ("user", "{code}")
+        ])
+        
+        chain = prompt | self.model
+        response = await chain.ainvoke({
+            "lib": decision.visualization_type, 
+            "topic": topic, 
+            "description": description,
+            "code_prompt": decision.code_prompt,
+            "code": code
+        })
+        
+        content = response.content.strip()
+        # Clean up markdown
+        if content.startswith("```html"):
+            content = content[7:]
+        elif content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+            
+        return content.strip()

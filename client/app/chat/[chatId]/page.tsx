@@ -7,7 +7,7 @@ import { chatApi } from '@/lib/api';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, User as UserIcon, Bot, Loader2 } from 'lucide-react';
+import { Send, User as UserIcon, Bot, Loader2, Image as ImageIcon, ImageOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
@@ -91,7 +91,7 @@ export default function ChatPage() {
   // Initialize WebSocket
   useSocket();
 
-  const { messages, setMessages, addMessage, activeResearch, selectedModel, setSelectedModel } = useChatStore();
+  const { messages, setMessages, addMessage, activeResearch, selectedModel, setSelectedModel, includeIllustrations, setIncludeIllustrations } = useChatStore();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -143,7 +143,7 @@ export default function ChatPage() {
         });
 
         const provider = getProviderForModel(selectedModel);
-        const response = await chatApi.sendMessage(chatId, content, selectedModel, provider);
+        const response = await chatApi.sendMessage(chatId, content, selectedModel, provider, includeIllustrations);
         // The API returns the saved message.
         // In a real implementation with WebSocket, we might get two messages back: the user's saved message (with real ID) and then the AI response.
         // Since we are using REST for now to send, and we want to see the AI response, we rely on the backend to trigger AI and eventually we'll fetch it or get it via WS.
@@ -271,6 +271,17 @@ export default function ChatPage() {
                                 ))}
                             </SelectContent>
                          </Select>
+
+                         <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost" 
+                            onClick={() => setIncludeIllustrations(!includeIllustrations)}
+                            className={cn("h-8 w-8 transition-all duration-200", includeIllustrations ? "text-primary" : "text-muted-foreground")}
+                            title={includeIllustrations ? "Illustrations enabled" : "Illustrations disabled"}
+                        >
+                            {includeIllustrations ? <ImageIcon className="h-4 w-4" /> : <ImageOff className="h-4 w-4" />}
+                        </Button>
                     </div>
 
                     <Button 

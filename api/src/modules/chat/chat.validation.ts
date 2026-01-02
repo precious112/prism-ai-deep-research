@@ -20,6 +20,7 @@ export const createMessageSchema = z.object({
     model: z.string().optional(),
     provider: z.string().optional(),
     apiKey: z.string().optional(),
+    includeIllustrations: z.boolean().optional(),
   }),
 });
 

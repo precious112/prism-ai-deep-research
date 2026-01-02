@@ -28,7 +28,7 @@ class RedisPublisher:
         except Exception as e:
             print(f"Failed to publish update: {e}")
 
-async def run_parallel_research(model, plan, user_id, request_id, publisher, api_client):
+async def run_parallel_research(model, plan, user_id, request_id, publisher, api_client, include_illustrations=True):
     # Create callback factory
     def create_callback(section_index, section_title):
         loop = asyncio.get_running_loop()
@@ -73,7 +73,7 @@ async def run_parallel_research(model, plan, user_id, request_id, publisher, api
         })
         
         callback = create_callback(i, section.title)
-        agent = ResearcherAgent(model, serper_api_key=Config.SERPER_API_KEY, event_callback=callback)
+        agent = ResearcherAgent(model, serper_api_key=Config.SERPER_API_KEY, event_callback=callback, include_illustrations=include_illustrations)
         result = await agent.run_research(section.title, section.description)
         
         # Save intermediate draft
@@ -156,6 +156,9 @@ def main():
                 config = payload.get("config", {})
                 chat_id = payload.get("chatId")
                 
+                # Extract options
+                include_illustrations = config.get("includeIllustrations", True)
+                
                 # 1. Initialize Model
                 try:
                     model = ModelFactory.get_model(config)
@@ -185,7 +188,8 @@ def main():
 
                 try:
                     planner = PlanningAgent(model)
-                    plan = planner.generate_plan(query)
+                    history = payload.get("history", [])
+                    plan = asyncio.run(planner.generate_plan(query, history))
                     
                     # Convert Pydantic model to dict
                     toc = [s.title for s in plan.sections]
@@ -210,7 +214,7 @@ def main():
 
                     # 3. Research Phase (Parallel)
                     # We run the async loop here
-                    sections_content = asyncio.run(run_parallel_research(model, plan, user_id, request_id, publisher, api_client))
+                    sections_content = asyncio.run(run_parallel_research(model, plan, user_id, request_id, publisher, api_client, include_illustrations))
                     
                     # 4. Conclusion Phase
                     publisher.publish_update({

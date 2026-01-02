@@ -29,6 +29,7 @@ export const addMessageController = catchAsync(async (req: Request, res: Respons
       model: req.body.model,
       provider: req.body.provider,
       apiKey: req.body.apiKey,
+      includeIllustrations: req.body.includeIllustrations,
     }
   );
   sendSuccess(res, { message }, 201);

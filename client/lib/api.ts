@@ -128,8 +128,8 @@ export const chatApi = {
     const response = await api.get<ApiResponse<{ messages: Message[] }>>(`/chats/${chatId}/messages`);
     return response.data.data.messages.reverse();
   },
-  sendMessage: async (chatId: string, content: string, model?: string, provider?: string) => {
-    const response = await api.post<ApiResponse<{ message: Message }>>(`/chats/${chatId}/messages`, { content, model, provider });
+  sendMessage: async (chatId: string, content: string, model?: string, provider?: string, includeIllustrations: boolean = true) => {
+    const response = await api.post<ApiResponse<{ message: Message }>>(`/chats/${chatId}/messages`, { content, model, provider, includeIllustrations });
     return response.data.data.message;
   },
   updateChat: async (chatId: string, title: string) => {

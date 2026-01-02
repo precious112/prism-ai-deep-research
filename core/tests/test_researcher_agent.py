@@ -173,5 +173,27 @@ class TestResearcherAgent(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(result["illustration"])
         self.agent.illustration_tool.illustrate.assert_not_called()
 
+    async def test_illustrate_node_disabled(self):
+        # Initialize agent with illustrations disabled
+        agent = ResearcherAgent(self.mock_model, serper_api_key="fake", include_illustrations=False)
+        # Mock tool manually as setUp uses different agent
+        agent.illustration_tool = MagicMock()
+        agent.illustration_tool.illustrate = AsyncMock()
+        # Mock checker (though shouldn't be called)
+        agent.illustration_checker = MagicMock()
+        agent.illustration_checker.ainvoke = AsyncMock()
+
+        state = {
+            "topic": "Topic",
+            "description": "Desc",
+            "draft": "Draft"
+        }
+        
+        result = await agent.illustrate_node(state)
+        self.assertIsNone(result["illustration"])
+        # Ensure checker was NOT called
+        agent.illustration_checker.ainvoke.assert_not_called()
+        agent.illustration_tool.illustrate.assert_not_called()
+
 if __name__ == '__main__':
     unittest.main()

@@ -49,7 +49,7 @@ export const addMessage = async (
   userId: string | null,
   content: string,
   role: string = "user",
-  config?: { model?: string; provider?: string; apiKey?: string }
+  config?: { model?: string; provider?: string; apiKey?: string; includeIllustrations?: boolean }
 ) => {
   logger.info(`addMessage called for chat ${chatId} with role ${role}`);
 
@@ -85,6 +85,19 @@ export const addMessage = async (
   });
 
   if (result.researchRequest) {
+    // Fetch full chat history (excluding current message)
+    const history = await prisma.message.findMany({
+      where: {
+        chatId: chatId,
+        id: { not: result.message.id },
+      },
+      orderBy: { createdAt: "asc" },
+      select: {
+        role: true,
+        content: true,
+      },
+    });
+
     logger.info(`Pushing research task to Redis for request ${result.researchRequest.id}`);
     try {
       await redisClient.rpush(
@@ -94,6 +107,7 @@ export const addMessage = async (
           userId: userId,
           chatId: chatId,
           query: content,
+          history: history,
           config: config || {},
         })
       );

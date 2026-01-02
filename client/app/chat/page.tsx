@@ -8,7 +8,7 @@ import { chatApi } from '@/lib/api';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Bot, Loader2 } from 'lucide-react';
+import { Send, Bot, Loader2, Image as ImageIcon, ImageOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
@@ -78,7 +78,7 @@ const getProviderForModel = (modelId: string) => {
 export default function NewChatPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { addChat, addMessage, selectedModel, setSelectedModel } = useChatStore();
+  const { addChat, addMessage, selectedModel, setSelectedModel, includeIllustrations, setIncludeIllustrations } = useChatStore();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -122,7 +122,7 @@ export default function NewChatPage() {
         const provider = getProviderForModel(selectedModel);
         
         // 3. Send the message to the new chat
-        await chatApi.sendMessage(newChat.id, content, selectedModel, provider);
+        await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations);
 
         // 4. Redirect to the new chat page
         router.push(`/chat/${newChat.id}`);
@@ -192,6 +192,17 @@ export default function NewChatPage() {
                                 ))}
                             </SelectContent>
                          </Select>
+
+                         <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost" 
+                            onClick={() => setIncludeIllustrations(!includeIllustrations)}
+                            className={`h-8 w-8 transition-all duration-200 ${includeIllustrations ? "text-primary" : "text-muted-foreground"}`}
+                            title={includeIllustrations ? "Illustrations enabled" : "Illustrations disabled"}
+                        >
+                            {includeIllustrations ? <ImageIcon className="h-4 w-4" /> : <ImageOff className="h-4 w-4" />}
+                        </Button>
                     </div>
 
                     <Button 

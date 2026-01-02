@@ -4,12 +4,19 @@ import React from 'react';
 import { Maximize2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useMobile } from '@/hooks/use-mobile';
 
 interface CodeExecutorProps {
   code: string;
 }
 
 export function CodeExecutor({ code }: CodeExecutorProps) {
+  const isMobile = useMobile();
+
+  if (isMobile) {
+    return null;
+  }
+
   // The agent generates a complete HTML document.
   // We assume 'code' is the full HTML string starting with <!DOCTYPE html>.
   
