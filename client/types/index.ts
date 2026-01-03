@@ -1,7 +1,9 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface Message {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import AuthGuard from '@/components/auth-guard';
 import { ChatSidebar } from '@/components/chat-sidebar';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -15,15 +14,15 @@ export default function ChatLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <AuthGuard>
-      <div className="flex h-screen overflow-hidden bg-background">
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50">
-          <ChatSidebar className="h-full w-full" />
-        </aside>
-
+    <>
+      {/* 
+        Main layout container. 
+        Height is calculated to fill the screen minus the global navbar height (4rem/64px).
+      */}
+      <div className="flex flex-col h-[calc(100vh-4rem)] bg-background">
+        
         {/* Mobile Header */}
-        <div className="md:hidden fixed top-0 left-0 right-0 h-16 border-b bg-background z-50 flex items-center px-4">
+        <div className="md:hidden h-16 border-b bg-background flex items-center px-4 shrink-0">
             <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" className="-ml-2">
@@ -39,11 +38,19 @@ export default function ChatLayout({
             <div className="ml-4 font-semibold">Prism AI</div>
         </div>
 
-        {/* Main Content */}
-        <main className="flex-1 md:pl-64 h-full pt-16 md:pt-0">
-          {children}
-        </main>
+        {/* Workspace Area (Sidebar + Chat) */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Desktop Sidebar */}
+          <aside className="hidden md:flex w-64 flex-col border-r bg-background">
+            <ChatSidebar className="h-full w-full" />
+          </aside>
+
+          {/* Main Content Area */}
+          <main className="flex-1 h-full w-full relative">
+            {children}
+          </main>
+        </div>
       </div>
-    </AuthGuard>
+    </>
   );
 }

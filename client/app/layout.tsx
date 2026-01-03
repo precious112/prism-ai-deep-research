@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import AuthProvider from "@/components/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { Navbar } from "@/components/navbar";
+import { AuthModal } from "@/components/auth-modal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,8 +21,10 @@ export default function RootLayout({
         className="antialiased"
       >
         <AuthProvider>
+          <Navbar />
           {children}
           <Toaster />
+          <AuthModal />
         </AuthProvider>
       </body>
     </html>

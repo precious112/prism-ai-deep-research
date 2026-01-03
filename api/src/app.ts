@@ -1,6 +1,8 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import passport from "passport";
+import "./config/passport"; // Import passport config
 import swaggerUi from "swagger-ui-express";
 import { authRouter } from "./modules/auth/auth.routes";
 import { usersRouter } from "./modules/users/users.routes";
@@ -19,6 +21,7 @@ app.use(cors({
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
+app.use(passport.initialize() as any);
 
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).send("OK");

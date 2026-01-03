@@ -16,6 +16,30 @@ import {
 import { catchAsync } from "../../utils/catchAsync";
 import AppError from "../../utils/AppError";
 
+export const oauthCallback = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user as any;
+  if (!user) {
+    throw new AppError(401, "Authentication failed");
+  }
+
+  await deleteAllRefreshTokensForUser(user.id);
+
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
+
+  await addRefreshTokenToDb(user.id, refreshToken);
+
+  res.cookie("refresh_token", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/api/auth",
+  });
+
+  const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+  res.redirect(`${clientUrl}/login?token=${accessToken}&userId=${user.id}`);
+});
+
 export const loginController = catchAsync(async (req: Request, res: Response) => {
   const user = await loginService(req.body);
 

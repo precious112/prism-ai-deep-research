@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
-import { chatApi } from '@/lib/api';
+import api, { chatApi } from '@/lib/api';
 import { Chat } from '@/types';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, MessageSquare, MoreHorizontal, Pencil, Trash, X, Check } from 'lucide-react';
+import { Plus, MessageSquare, MoreHorizontal, Pencil, Trash, X, Check, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ export function ChatSidebar({ className, onSelect }: ChatSidebarProps) {
   const params = useParams();
   const activeChatId = params?.chatId as string;
 
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { chats, setChats, addChat, updateChat, removeChat } = useChatStore();
   const [loading, setLoading] = useState(false);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
@@ -52,6 +52,17 @@ export function ChatSidebar({ className, onSelect }: ChatSidebarProps) {
         .catch(err => console.error('Failed to fetch chats', err));
     }
   }, [user?.id, setChats]);
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      logout();
+      router.push("/login");
+    }
+  };
 
   const handleNewChat = async () => {
     if (!user?.id) return;
@@ -211,6 +222,20 @@ export function ChatSidebar({ className, onSelect }: ChatSidebarProps) {
             </div>
           </ScrollArea>
         </div>
+        
+        {user && (
+          <div className="px-3 pt-2 border-t">
+            <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/50">
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">{user.firstName || user.email || 'User'}</span>
+                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+              </div>
+              <Button variant="ghost" size="icon" onClick={handleLogout} className="shrink-0 text-muted-foreground hover:text-destructive h-8 w-8">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={!!deleteChatId} onOpenChange={(open) => !open && setDeleteChatId(null)}>

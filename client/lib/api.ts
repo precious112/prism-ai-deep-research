@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { toast } from '../hooks/use-toast';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -50,11 +50,10 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh')) {
-        // If the refresh request itself failed, logout and redirect
+        // If the refresh request itself failed, logout and show login modal
+        // This means the session is truly dead
         useAuthStore.getState().logout();
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-          window.location.href = '/login';
-        }
+        useAuthStore.getState().setAuthModalOpen(true);
         return Promise.reject(error);
       }
 
@@ -90,9 +89,7 @@ api.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         useAuthStore.getState().logout();
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-          window.location.href = '/login';
-        }
+        useAuthStore.getState().setAuthModalOpen(true);
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
@@ -128,8 +125,8 @@ export const chatApi = {
     const response = await api.get<ApiResponse<{ messages: Message[] }>>(`/chats/${chatId}/messages`);
     return response.data.data.messages.reverse();
   },
-  sendMessage: async (chatId: string, content: string, model?: string, provider?: string) => {
-    const response = await api.post<ApiResponse<{ message: Message }>>(`/chats/${chatId}/messages`, { content, model, provider });
+  sendMessage: async (chatId: string, content: string, model?: string, provider?: string, includeIllustrations: boolean = true, apiKey?: string) => {
+    const response = await api.post<ApiResponse<{ message: Message }>>(`/chats/${chatId}/messages`, { content, model, provider, includeIllustrations, apiKey });
     return response.data.data.message;
   },
   updateChat: async (chatId: string, title: string) => {

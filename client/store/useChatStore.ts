@@ -7,6 +7,7 @@ interface ChatState {
   activeChatId: string | null;
   messages: Message[];
   selectedModel: string;
+  includeIllustrations: boolean;
   
   // Research State
   activeResearch: ResearchState | null;
@@ -19,6 +20,7 @@ interface ChatState {
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   setSelectedModel: (model: string) => void;
+  setIncludeIllustrations: (enabled: boolean) => void;
   
   // Research Actions
   startResearch: (requestId: string) => void;
@@ -39,6 +41,7 @@ export const useChatStore = create<ChatState>()(
       activeChatId: null,
       messages: [],
       selectedModel: 'gpt-4o',
+      includeIllustrations: true,
       activeResearch: null,
 
       setChats: (chats) => set({ chats }),
@@ -54,6 +57,7 @@ export const useChatStore = create<ChatState>()(
       setMessages: (messages) => set({ messages }),
       addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
       setSelectedModel: (model) => set({ selectedModel: model }),
+      setIncludeIllustrations: (enabled) => set({ includeIllustrations: enabled }),
 
       // Research Actions implementation
       startResearch: (requestId) => set({
@@ -174,7 +178,7 @@ export const useChatStore = create<ChatState>()(
     }),
     {
       name: 'chat-storage',
-      partialize: (state) => ({ selectedModel: state.selectedModel }),
+      partialize: (state) => ({ selectedModel: state.selectedModel, includeIllustrations: state.includeIllustrations }),
     }
   )
 );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
@@ -8,7 +8,7 @@ import { chatApi } from '@/lib/api';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Bot, Loader2 } from 'lucide-react';
+import { Send, Bot, Loader2, Image as ImageIcon, ImageOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const AVAILABLE_MODELS = [
   {
@@ -77,8 +78,9 @@ const getProviderForModel = (modelId: string) => {
 
 export default function NewChatPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
-  const { addChat, addMessage, selectedModel, setSelectedModel } = useChatStore();
+  const { user, isAuthenticated, setAuthModalOpen } = useAuthStore();
+  const { apiKeys } = useSettingsStore();
+  const { addChat, addMessage, selectedModel, setSelectedModel, includeIllustrations, setIncludeIllustrations } = useChatStore();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -88,48 +90,35 @@ export default function NewChatPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    console.log('handleSubmit called', { input, sending, userId: user?.id });
     
-    if (!input.trim()) {
-        console.log('Input is empty');
+    if (!input.trim()) return;
+
+    if (!isAuthenticated || !user) {
+        setAuthModalOpen(true);
         return;
     }
-    if (sending) {
-        console.log('Already sending');
-        return;
-    }
-    if (!user?.id) {
-        console.error('User ID is missing');
-        // Maybe show an error toast here
-        return;
-    }
+
+    if (sending) return;
 
     const content = input.trim();
     setInput('');
     setSending(true);
 
     try {
-        console.log('Creating chat...');
         // 1. Create a new chat
         const newChat = await chatApi.createChat(user.id);
         addChat(newChat);
 
-        // 2. Optimistically add user message (optional, as we are redirecting)
-        // Ideally, we want to show the message immediately on the next page.
-        // We can pass it via state or just let the next page fetch/socket handle it.
-        // But for "feeling fast", let's just send it.
-
+        // 2. Send the message to the new chat
         const provider = getProviderForModel(selectedModel);
-        
-        // 3. Send the message to the new chat
-        await chatApi.sendMessage(newChat.id, content, selectedModel, provider);
+        const apiKey = apiKeys[provider.toLowerCase() as keyof typeof apiKeys];
+        await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations, apiKey);
 
-        // 4. Redirect to the new chat page
+        // 3. Redirect to the new chat page
         router.push(`/chat/${newChat.id}`);
         
     } catch (error) {
         console.error('Failed to create chat or send message', error);
-        // Handle error (maybe show a toast)
     } finally {
         setSending(false);
     }
@@ -144,24 +133,28 @@ export default function NewChatPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex-1 overflow-hidden relative flex flex-col items-center justify-center p-4">
-        <div className="max-w-2xl w-full space-y-8 text-center">
-            <div className="space-y-4">
-                <Avatar className="h-20 w-20 mx-auto">
-                    <AvatarImage src="/prism_ai_logo.jpeg" alt="Prism AI Logo" />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                        <Bot className="h-10 w-10" />
-                    </AvatarFallback>
-                </Avatar>
-                <h1 className="text-3xl font-bold tracking-tight">How can I help you today?</h1>
-                <p className="text-muted-foreground text-lg">
-                    I'm Prism AI, capable of deep web research and complex reasoning.
-                </p>
+      <div className="flex-1 overflow-hidden relative">
+        <ScrollArea className="h-full">
+          <div className="flex flex-col items-center justify-center min-h-full p-4">
+            <div className="max-w-2xl w-full space-y-8 text-center">
+                <div className="space-y-4">
+                    <Avatar className="h-20 w-20 mx-auto">
+                        <AvatarImage src="/prism_ai_logo.jpeg" alt="Prism AI Logo" />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                            <Bot className="h-10 w-10" />
+                        </AvatarFallback>
+                    </Avatar>
+                    <h1 className="text-3xl font-bold tracking-tight">How can I help you today?</h1>
+                    <p className="text-muted-foreground text-lg">
+                        I'm Prism AI, capable of deep web research and complex reasoning.
+                    </p>
+                </div>
             </div>
-        </div>
+          </div>
+        </ScrollArea>
       </div>
 
-      <div className="p-4 bg-background">
+      <div className="p-4 bg-background border-t">
         <div className="max-w-3xl mx-auto">
             <form onSubmit={handleSubmit} className="relative rounded-xl border bg-background focus-within:ring-1 focus-within:ring-ring p-3 shadow-sm transition-all duration-200">
                 <Textarea
@@ -192,6 +185,17 @@ export default function NewChatPage() {
                                 ))}
                             </SelectContent>
                          </Select>
+
+                         <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost" 
+                            onClick={() => setIncludeIllustrations(!includeIllustrations)}
+                            className={`h-8 w-8 transition-all duration-200 ${includeIllustrations ? "text-primary" : "text-muted-foreground"}`}
+                            title={includeIllustrations ? "Illustrations enabled" : "Illustrations disabled"}
+                        >
+                            {includeIllustrations ? <ImageIcon className="h-4 w-4" /> : <ImageOff className="h-4 w-4" />}
+                        </Button>
                     </div>
 
                     <Button 

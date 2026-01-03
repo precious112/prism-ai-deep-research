@@ -16,6 +16,8 @@ model User {
   firstName             String?                @map("first_name")
   lastName              String?                @map("last_name")
   password              String?
+  googleId              String?                @map("google_id")
+  githubId              String?                @map("github_id")
   lastLoginAt           DateTime?              @map("last_login_at")
   createdAt             DateTime               @default(now()) @map("created_at")
   createdOrganizations  Organization[]         @relation("CreatedBy")

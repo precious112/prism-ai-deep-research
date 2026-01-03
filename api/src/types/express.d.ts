@@ -1,8 +1,7 @@
-import { User } from "@prisma/client";
-import * as express from "express";
+import { User as PrismaUser } from "@prisma/client";
 
-declare module "express" {
-  export interface Request {
-    user?: User;
+declare global {
+  namespace Express {
+    interface User extends PrismaUser {}
   }
 }

@@ -36,7 +36,7 @@ class IllustrationCheck(BaseModel):
     reason: str = Field(description="Reason for the decision")
 
 class ResearcherAgent:
-    def __init__(self, model: BaseChatModel, serper_api_key: str = None, event_callback=None):
+    def __init__(self, model: BaseChatModel, serper_api_key: str = None, event_callback=None, include_illustrations: bool = True):
         self.model = model
         self.serper_tool = SerperTool(api_key=serper_api_key)
         self.crawler_tool = CrawlerTool()
@@ -44,6 +44,7 @@ class ResearcherAgent:
         self.gap_analyzer = model.with_structured_output(GapAnalysis)
         self.illustration_checker = model.with_structured_output(IllustrationCheck)
         self.event_callback = event_callback
+        self.include_illustrations = include_illustrations
         self.graph = self._build_graph()
 
     def _build_graph(self):
@@ -175,6 +176,10 @@ class ResearcherAgent:
         return {"draft": response.content}
 
     async def illustrate_node(self, state: ResearcherState):
+        # Check user preference
+        if not self.include_illustrations:
+            return {"illustration": None}
+
         topic = state["topic"]
         description = state["description"]
         draft = state.get("draft", "")
