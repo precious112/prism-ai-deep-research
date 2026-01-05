@@ -3,20 +3,34 @@
 **An open-source AI research agent.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![Go](https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+
+---
+
+## 🎥 Demo
+
+[![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
+*(Click the image to watch the demo)*
 
 ---
 
 ## About The Project
 
-Prism AI is an open-source AI research agent designed to be an alternative to services like Perplexity AI's research feature.
+Prism AI is an open-source AI research agent designed to be an alternative to services like Perplexity AI's research feature. It leverages a multi-agent system to perform deep research, synthesize findings, and generate custom visualizations (charts, diagrams) to explain complex topics.
 
 ## Documentation
 
-All the documentation for this project can be found in the [docs](./docs) directory or on our [documentation website](https://your-docusaurus-website.com).
+All the documentation for this project can be found in the [docs](./docs) directory.
 
 Here are some quick links to get you started:
 
 - [**Getting Started**](./docs/01-getting-started/01-introduction.md)
+- [**Installation Guide**](./docs/01-getting-started/02-installation.md)
 - [**Architecture Overview**](./docs/02-architecture/01-overview.md)
 - [**Development Workflow**](./docs/03-guides/01-development-workflow.md)
 
