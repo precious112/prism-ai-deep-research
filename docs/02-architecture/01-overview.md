@@ -14,21 +14,21 @@ The core of the architecture is a set of decoupled services that communicate asy
 
 ```mermaid
 graph TD
-    User[User / Browser]
+    User["User / Browser"]
     
     subgraph Client
-        NextJS[Next.js Client]
+        NextJS["Next.js Client"]
     end
 
     subgraph Backend
-        API[API Server (Express)]
-        WS[WebSocket Server (Go)]
-        DB[(PostgreSQL)]
-        Redis[(Redis)]
+        API["API Server (Express)"]
+        WS["WebSocket Server (Go)"]
+        DB[("PostgreSQL")]
+        Redis[("Redis")]
     end
 
     subgraph Workers
-        AI[AI Worker (Python)]
+        AI["AI Worker (Python)"]
     end
 
     User -->|HTTPS| NextJS
