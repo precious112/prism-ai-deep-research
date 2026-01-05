@@ -1,0 +1,114 @@
+name: Deploy to GKE
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  GCR_HOSTNAME: gcr.io
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Get GKE Credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ env.GKE_CLUSTER }}
+        location: ${{ env.GKE_ZONE }}
+
+    - name: Login to GCR
+      uses: docker/login-action@v3
+      with:
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.GCP_CREDENTIALS }}
+
+    - name: Build and Push API
+      uses: docker/build-push-action@v5
+      with:
+        context: ./api
+        push: true
+        tags: gcr.io/${{ env.PROJECT_ID }}/prism-api:${{ github.sha }}
+
+    - name: Build and Push Client
+      uses: docker/build-push-action@v5
+      with:
+        context: ./client
+        push: true
+        tags: gcr.io/${{ env.PROJECT_ID }}/prism-client:${{ github.sha }}
+        build-args: |
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_WS_URL=${{ secrets.NEXT_PUBLIC_WS_URL }}
+          NEXT_PUBLIC_OFFLINE_MODE=false
+
+    - name: Build and Push Worker
+      uses: docker/build-push-action@v5
+      with:
+        context: ./core
+        push: true
+        tags: gcr.io/${{ env.PROJECT_ID }}/prism-worker:${{ github.sha }}
+
+    - name: Build and Push Websocket
+      uses: docker/build-push-action@v5
+      with:
+        context: ./websocket
+        push: true
+        tags: gcr.io/${{ env.PROJECT_ID }}/prism-websocket:${{ github.sha }}
+
+    - name: Prepare Manifests
+      run: |
+        export GOOGLE_PROJECT_ID=$PROJECT_ID
+        export GCR_HOSTNAME=$GCR_HOSTNAME
+        export GITHUB_SHA=${{ github.sha }}
+        
+        # Export all secrets for envsubst
+        export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+        export REDIS_URL="redis://redis:6379"
+        export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
+        export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+        export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
+        export ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}"
+        export REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}"
+        export RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}"
+        export WORKER_SECRET="${{ secrets.WORKER_SECRET }}"
+        export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
+        export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
+        export GITHUB_CLIENT_ID="${{ secrets.GITHUB_CLIENT_ID }}"
+        export GITHUB_CLIENT_SECRET="${{ secrets.GITHUB_CLIENT_SECRET }}"
+        export WORKER_API_KEY="${{ secrets.WORKER_API_KEY }}"
+        export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+        export SERPER_API_KEY="${{ secrets.SERPER_API_KEY }}"
+        export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
+        export GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}"
+        export XAI_API_KEY="${{ secrets.XAI_API_KEY }}"
+        export CLIENT_URL="${{ secrets.CLIENT_URL }}"
+        
+        # Substitute in all files
+        # Note: We use envsubst on yaml files. 
+        # Be careful with variables that are NOT in env, they will be replaced by empty string if not careful.
+        # But we only use ${VAR} format which envsubst targets.
+        for file in k8s/*.yaml; do
+          envsubst < "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        done
+
+    - name: Deploy
+      run: |
+        kubectl apply -f k8s/

@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: prism
+          POSTGRES_PASSWORD: prism
+          POSTGRES_DB: prism_ai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: api/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./api
+      run: npm ci
+
+    - name: Create .env.test
+      working-directory: ./api
+      run: |
+        echo "DATABASE_URL=postgresql://prism:prism@localhost:5432/prism_ai_test?schema=public" > .env.test
+        echo "TEST_DATABASE_URL=postgresql://prism:prism@localhost:5432/prism_ai_test?schema=public" >> .env.test
+        echo "REDIS_URL=redis://localhost:6379" >> .env.test
+        echo "ACCESS_TOKEN_SECRET=test" >> .env.test
+        echo "REFRESH_TOKEN_SECRET=test" >> .env.test
+        echo "WORKER_SECRET=test" >> .env.test
+
+    - name: Run Tests
+      working-directory: ./api
+      run: npm test
+
+  test-worker:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+
+    - name: Set up Python
+      run: uv python install
+
+    - name: Install dependencies
+      working-directory: ./core
+      run: uv sync
+
+    - name: Create .env
+      working-directory: ./core
+      run: |
+        echo "REDIS_HOST=localhost" > .env
+        echo "REDIS_PORT=6379" >> .env
+        echo "API_URL=http://localhost:3000/api" >> .env
+
+    - name: Run Tests
+      working-directory: ./core
+      run: uv run pytest
