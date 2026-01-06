@@ -17,6 +17,8 @@ spec:
         image: "${GCR_HOSTNAME}/${GOOGLE_PROJECT_ID}/prism-websocket:${GITHUB_SHA}"
         ports:
         - containerPort: 8080
+        command: ["./server"]
+        args: ["-redis", "$(REDIS_HOST):$(REDIS_PORT)"]
         envFrom:
         - configMapRef:
             name: prism-config
