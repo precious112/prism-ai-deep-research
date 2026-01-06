@@ -22,7 +22,7 @@ app.listen(port, async () => {
             email,
             firstName: "Offline",
             lastName: "User",
-            password: null, // No password needed for offline user
+            password: null, // No password needed for offline  user
           },
         });
         logger.info("Offline user created successfully.");
