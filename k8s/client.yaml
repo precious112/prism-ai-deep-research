@@ -25,13 +25,13 @@ spec:
             name: prism-config
         livenessProbe:
           httpGet:
-            path: /
+            path: /chat
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /
+            path: /chat
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -40,6 +40,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: client
+  annotations:
+    cloud.google.com/backend-config: '{"default": "client-backendconfig"}'
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: NodePort
   ports:

@@ -41,6 +41,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: websocket
+  annotations:
+    cloud.google.com/backend-config: '{"default": "websocket-backendconfig"}'
 spec:
   type: NodePort
   ports:
