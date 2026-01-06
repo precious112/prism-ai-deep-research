@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket
+  template:
+    metadata:
+      labels:
+        app: websocket
+    spec:
+      containers:
+      - name: websocket
+        image: "${GCR_HOSTNAME}/${GOOGLE_PROJECT_ID}/prism-websocket:${GITHUB_SHA}"
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: prism-config
+        - secretRef:
+            name: prism-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: websocket

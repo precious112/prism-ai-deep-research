@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - name: client
+        image: "${GCR_HOSTNAME}/${GOOGLE_PROJECT_ID}/prism-client:${GITHUB_SHA}"
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: prism-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: client
