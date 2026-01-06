@@ -26,7 +26,7 @@ kind: Service
 metadata:
   name: client
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - port: 80
     targetPort: 3000

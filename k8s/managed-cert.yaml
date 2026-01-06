@@ -1,0 +1,9 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: prism-certificate
+spec:
+  domains:
+    - prism-ai.glyde.world
+    - backend.prism-ai.glyde.world
+    - socket.prism-ai.glyde.world
