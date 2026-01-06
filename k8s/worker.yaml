@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: "${GCR_HOSTNAME}/${GOOGLE_PROJECT_ID}/prism-worker:${GITHUB_SHA}"
+        env:
+        - name: API_URL
+          value: "http://api:3000/api"
+        envFrom:
+        - configMapRef:
+            name: prism-config
+        - secretRef:
+            name: prism-secrets

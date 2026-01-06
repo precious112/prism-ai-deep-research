@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "dotenv -e .env.test -- prisma migrate reset --force && dotenv -e .env.test -- jest -i",
+    "test": "dotenv -e .env.test -- prisma migrate reset --force && dotenv -e .env.test -- jest -i --forceExit",
     "dev": "nodemon src/index.ts",
     "postinstall": "prisma generate"
   },

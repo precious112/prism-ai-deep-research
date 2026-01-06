@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prism-config
+data:
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  PORT: "3000"
+  MAX_CONCURRENT_TASKS: "50"
+  OFFLINE_MODE: "false"
+  CLIENT_URL: "${CLIENT_URL}"
