@@ -54,6 +54,12 @@ jobs:
         echo "ACCESS_TOKEN_SECRET=test" >> .env.test
         echo "REFRESH_TOKEN_SECRET=test" >> .env.test
         echo "WORKER_SECRET=test" >> .env.test
+        echo "RESEND_API_KEY=re_123456789" >> .env.test
+        echo "GOOGLE_CLIENT_ID=test" >> .env.test
+        echo "GOOGLE_CLIENT_SECRET=test" >> .env.test
+        echo "GH_CLIENT_ID=test" >> .env.test
+        echo "GH_CLIENT_SECRET=test" >> .env.test
+        echo "CLIENT_URL=http://localhost:3000" >> .env.test
 
     - name: Run Tests
       working-directory: ./api
