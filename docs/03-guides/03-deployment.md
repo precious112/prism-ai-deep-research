@@ -57,8 +57,8 @@ These values will be injected into `k8s/secrets.yaml` during deployment.
 *   `WORKER_SECRET`: Shared secret between API and Worker.
 *   `GOOGLE_CLIENT_ID`: OAuth Client ID.
 *   `GOOGLE_CLIENT_SECRET`: OAuth Client Secret.
-*   `GITHUB_CLIENT_ID`: GitHub OAuth Client ID.
-*   `GITHUB_CLIENT_SECRET`: GitHub OAuth Secret.
+*   `GH_CLIENT_ID`: GitHub OAuth Client ID (Note: Do not use GITHUB_ prefix in secret names).
+*   `GH_CLIENT_SECRET`: GitHub OAuth Secret.
 *   `WORKER_API_KEY`: Same as `WORKER_SECRET`.
 *   `OPENAI_API_KEY`: OpenAI API Key.
 *   `SERPER_API_KEY`: Serper API Key.
@@ -90,3 +90,27 @@ Once the secrets are set, simply push to the `main` branch.
 *   **Local**: Uses `docker-compose.yml`.
 *   **Production**: Uses Kubernetes manifests in `k8s/`.
 *   **Secrets**: Local uses `.env`, Production uses GitHub Secrets.
+
+## Connecting to the Cluster Locally
+
+To manage your GKE cluster from your local machine (e.g., to check logs or status):
+
+1.  **Install/Update GKE Auth Plugin**:
+    ```bash
+    gcloud components install gke-gcloud-auth-plugin
+    ```
+
+2.  **Authenticate**:
+    ```bash
+    gcloud auth login
+    ```
+
+3.  **Get Credentials**:
+    ```bash
+    gcloud container clusters get-credentials <CLUSTER_NAME> --zone <ZONE> --project <PROJECT_ID>
+    ```
+
+4.  **Verify Connection**:
+    ```bash
+    kubectl get nodes
+    ```
