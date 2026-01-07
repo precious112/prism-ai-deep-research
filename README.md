@@ -9,6 +9,8 @@
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 
+**Check it out online:** [https://prism-ai.glyde.world/](https://prism-ai.glyde.world/)
+
 ---
 
 ## 🎥 Demo
