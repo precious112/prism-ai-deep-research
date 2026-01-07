@@ -17,8 +17,6 @@
 
 
 
-*(Click the image to watch the demo)*
-
 ---
 
 ## About The Project
