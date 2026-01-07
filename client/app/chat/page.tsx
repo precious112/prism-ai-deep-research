@@ -110,7 +110,8 @@ export default function NewChatPage() {
         // 2. Send the message to the new chat
         const provider = getProviderForModel(selectedModel);
         const apiKey = apiKeys[provider.toLowerCase() as keyof typeof apiKeys];
-        await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations, apiKey);
+        const serperApiKey = apiKeys.serper;
+        await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations, apiKey, serperApiKey);
 
         // 3. Redirect to the new chat page
         router.push(`/chat/${newChat.id}`);
