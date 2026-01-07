@@ -80,16 +80,17 @@ jobs:
         export GITHUB_SHA=${{ github.sha }}
         
         # Export all secrets for envsubst
-        export DATABASE_URL="${{ secrets.DATABASE_URL }}"
         export REDIS_URL="redis://redis:6379"
         export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
         export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
         export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
+        export DATABASE_URL="postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/${{ secrets.POSTGRES_DB }}?schema=public"
         export ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}"
         export REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}"
         export RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}"
         export WORKER_SECRET="${{ secrets.WORKER_SECRET }}"
         export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
+        echo "Google Client ID Length: ${#GOOGLE_CLIENT_ID}"
         export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
         export GITHUB_CLIENT_ID="${{ secrets.GH_CLIENT_ID }}"
         export GITHUB_CLIENT_SECRET="${{ secrets.GH_CLIENT_SECRET }}"
