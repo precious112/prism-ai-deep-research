@@ -74,37 +74,31 @@ jobs:
         tags: gcr.io/${{ env.PROJECT_ID }}/prism-websocket:${{ github.sha }}
 
     - name: Prepare Manifests
+      env:
+        GOOGLE_PROJECT_ID: ${{ env.PROJECT_ID }}
+        GCR_HOSTNAME: ${{ env.GCR_HOSTNAME }}
+        GITHUB_SHA: ${{ github.sha }}
+        REDIS_URL: "redis://redis:6379"
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        DATABASE_URL: "postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/${{ secrets.POSTGRES_DB }}?schema=public"
+        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+        RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
+        GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
+        WORKER_API_KEY: ${{ secrets.WORKER_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        CLIENT_URL: ${{ secrets.CLIENT_URL }}
       run: |
-        export GOOGLE_PROJECT_ID=$PROJECT_ID
-        export GCR_HOSTNAME=$GCR_HOSTNAME
-        export GITHUB_SHA=${{ github.sha }}
-        
-        # Export all secrets for envsubst
-        export REDIS_URL="redis://redis:6379"
-        export POSTGRES_USER='${{ secrets.POSTGRES_USER }}'
-        export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
-        export POSTGRES_DB='${{ secrets.POSTGRES_DB }}'
-        export DATABASE_URL='postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/${{ secrets.POSTGRES_DB }}?schema=public'
-        export ACCESS_TOKEN_SECRET='${{ secrets.ACCESS_TOKEN_SECRET }}'
-        export REFRESH_TOKEN_SECRET='${{ secrets.REFRESH_TOKEN_SECRET }}'
-        export RESEND_API_KEY='${{ secrets.RESEND_API_KEY }}'
-        export WORKER_SECRET='${{ secrets.WORKER_SECRET }}'
-        export GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}'
-        export GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'
-        export GITHUB_CLIENT_ID='${{ secrets.GH_CLIENT_ID }}'
-        export GITHUB_CLIENT_SECRET='${{ secrets.GH_CLIENT_SECRET }}'
-        export WORKER_API_KEY='${{ secrets.WORKER_API_KEY }}'
-        export OPENAI_API_KEY='${{ secrets.OPENAI_API_KEY }}'
-        export SERPER_API_KEY='${{ secrets.SERPER_API_KEY }}'
-        export ANTHROPIC_API_KEY='${{ secrets.ANTHROPIC_API_KEY }}'
-        export GOOGLE_API_KEY='${{ secrets.GOOGLE_API_KEY }}'
-        export XAI_API_KEY='${{ secrets.XAI_API_KEY }}'
-        export CLIENT_URL='${{ secrets.CLIENT_URL }}'
-        
-        # Substitute in all files
-        # Note: We use envsubst on yaml  files. 
-        # Be careful with variables that are NOT in env, they will be replaced by empty string if not careful.
-        # But we only use ${VAR} format which envsubst targets.
         for file in k8s/*.yaml; do
           envsubst < "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         done
