@@ -14,6 +14,9 @@ import { generateOpenAPI } from "./utils/swagger";
 
 const app: Express = express();
 
+// Trust first proxy (load balancer) - required for correct HTTPS detection behind reverse proxy
+app.set('trust proxy', 1);
+
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000").split(",");
 
 app.use(cors({
