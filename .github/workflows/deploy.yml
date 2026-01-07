@@ -102,7 +102,7 @@ jobs:
         export CLIENT_URL='${{ secrets.CLIENT_URL }}'
         
         # Substitute in all files
-        # Note: We use envsubst on yaml files. 
+        # Note: We use envsubst on yaml  files. 
         # Be careful with variables that are NOT in env, they will be replaced by empty string if not careful.
         # But we only use ${VAR} format which envsubst targets.
         for file in k8s/*.yaml; do
