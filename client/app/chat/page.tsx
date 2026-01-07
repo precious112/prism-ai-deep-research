@@ -78,7 +78,7 @@ export default function NewChatPage() {
   const router = useRouter();
   const { user, isAuthenticated, setAuthModalOpen } = useAuthStore();
   const { apiKeys } = useSettingsStore();
-  const { addChat, addMessage, selectedModel, setSelectedModel, includeIllustrations, setIncludeIllustrations } = useChatStore();
+  const { addChat, addMessage, selectedModel, setSelectedModel, includeIllustrations, setIncludeIllustrations, startResearch } = useChatStore();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -113,7 +113,10 @@ export default function NewChatPage() {
         const serperApiKey = apiKeys.serper;
         await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations, apiKey, serperApiKey);
 
-        // 3. Redirect to the new chat page
+        // 3. Start research state immediately so the next page shows loading
+        startResearch('pending');
+
+        // 4. Redirect to the new chat page
         router.push(`/chat/${newChat.id}`);
         
     } catch (error) {
