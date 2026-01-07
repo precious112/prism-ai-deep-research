@@ -7,7 +7,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: worker
-  minReplicas: 4
+  minReplicas: 3
   maxReplicas: 8
   metrics:
   - type: Resource
