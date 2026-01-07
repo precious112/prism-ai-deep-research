@@ -15,7 +15,7 @@
 
 ## 🎥 Demo
 
-[▶ Watch Prism AI Demo](https://res.cloudinary.com/chopwell/video/upload/v1767778690/prism_ai_1_2_ukywot.mp4)
+[![▶ Watch Prism AI Demo](https://raw.githubusercontent.com/precious112/Pstore_backend/refs/heads/master/media/media/Screenshot%202026-01-07%20at%2011.36.43%20AM.png)](https://res.cloudinary.com/chopwell/video/upload/v1767778690/prism_ai_1_2_ukywot.mp4)
 
 
 
