@@ -83,8 +83,8 @@ Get up and running in minutes using Docker.
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/precious112/prism_ai.git
-    cd prism_ai
+    git clone https://github.com/precious112/prism-ai-deep-research.git
+    cd prism-ai-deep-research
     ```
 
 2.  **Set up environment variables**
