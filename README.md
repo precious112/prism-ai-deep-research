@@ -17,11 +17,18 @@
 
 LLMs are great at summaries but bad at **deep research**. They hallucinate, miss key details, and struggle with long-context tasks.
 
-**Prism AI solves this by orchestrating a team of autonomous agents.** Instead of a single inference pass, it uses a **Plan-and-Execute** architecture to:
+**Prism AI solves this by orchestrating a team of autonomous agents.** Whether you're a student, a developer, or a lifelong learner, Prism helps you dive deep into any topic. Instead of a single inference pass, it uses a **Plan-and-Execute** architecture to:
 1.  **Plan**: Break down a complex query into a structured Table of Contents.
 2.  **Research**: Spawn multiple "Researcher Agents" to search, crawl, and read the web in parallel.
 3.  **Synthesize**: Aggregate findings into a cohesive, cited report.
 4.  **Visualize**: Generate custom charts and diagrams to explain complex data.
+
+## 🧠 Beyond Research: A Powerful Learning Tool
+
+Prism AI isn't just for professionals. It's a versatile tool for anyone curious to learn. Use it to:
+*   **Master new topics**: Generate comprehensive guides on anything from quantum computing to ancient history.
+*   **Accelerate academic work**: Synthesize literature reviews, find citations, and explore new perspectives.
+*   **Onboard onto codebases**: Point it at a GitHub repo to understand its architecture and key components.
 
 ## 🎥 Demo
 
