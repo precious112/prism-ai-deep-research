@@ -29,7 +29,7 @@ class RedisPublisher:
         except Exception as e:
             print(f"Failed to publish update: {e}")
 
-async def run_parallel_research(model, plan, user_id, request_id, chat_id, publisher, api_client, include_illustrations=True, serper_api_key=None):
+async def run_parallel_research(model, plan, user_id, request_id, chat_id, publisher, api_client, include_illustrations=True, serper_api_key=None, tavily_api_key=None):
     # Create callback factory
     def create_callback(section_index, section_title):
         loop = asyncio.get_running_loop()
@@ -76,7 +76,7 @@ async def run_parallel_research(model, plan, user_id, request_id, chat_id, publi
         })
         
         callback = create_callback(i, section.title)
-        agent = ResearcherAgent(model, serper_api_key=serper_api_key or Config.SERPER_API_KEY, event_callback=callback, include_illustrations=include_illustrations)
+        agent = ResearcherAgent(model, serper_api_key=serper_api_key or Config.SERPER_API_KEY, tavily_api_key=tavily_api_key or Config.TAVILY_API_KEY, event_callback=callback, include_illustrations=include_illustrations)
         result = await agent.run_research(section.title, section.description)
         
         # Save intermediate draft
@@ -146,7 +146,8 @@ async def process_task(task_data, r, publisher, api_client, sem):
         # Extract options
         include_illustrations = config.get("includeIllustrations", True)
         serper_api_key = config.get("serperApiKey")
-        
+        tavily_api_key = config.get("tavilyApiKey")
+
         # 1. Initialize Model
         try:
             model = ModelFactory.get_model(config)
@@ -213,7 +214,7 @@ async def process_task(task_data, r, publisher, api_client, sem):
             print(f"Plan created for {request_id}: {toc}")
 
             # 3. Research Phase (Parallel)
-            sections_content = await run_parallel_research(model, plan, user_id, request_id, chat_id, publisher, api_client, include_illustrations, serper_api_key)
+            sections_content = await run_parallel_research(model, plan, user_id, request_id, chat_id, publisher, api_client, include_illustrations, serper_api_key, tavily_api_key)
             
             # 4. Conclusion Phase
             await publisher.publish_update({

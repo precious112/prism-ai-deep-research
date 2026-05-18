@@ -16,3 +16,4 @@ class Config:
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
     XAI_API_KEY = os.getenv("XAI_API_KEY")
     SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+    TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")

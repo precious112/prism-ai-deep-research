@@ -21,6 +21,7 @@ export const createMessageSchema = z.object({
     provider: z.string().optional(),
     apiKey: z.string().optional(),
     serperApiKey: z.string().optional(),
+    tavilyApiKey: z.string().optional(),
     includeIllustrations: z.boolean().optional(),
   }),
 });
