@@ -7,6 +7,7 @@ interface ApiKeys {
   google?: string;
   xai?: string;
   serper?: string;
+  tavily?: string;
 }
 
 interface SettingsState {

@@ -111,7 +111,8 @@ export default function NewChatPage() {
         const provider = getProviderForModel(selectedModel);
         const apiKey = apiKeys[provider.toLowerCase() as keyof typeof apiKeys];
         const serperApiKey = apiKeys.serper;
-        await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations, apiKey, serperApiKey);
+        const tavilyApiKey = apiKeys.tavily;
+        await chatApi.sendMessage(newChat.id, content, selectedModel, provider, includeIllustrations, apiKey, serperApiKey, tavilyApiKey);
 
         // 3. Start research state immediately so the next page shows loading
         startResearch('pending');

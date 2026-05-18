@@ -89,6 +89,19 @@ export function SettingsDialog() {
               className="col-span-3"
             />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="tavily" className="text-right text-sm font-medium">
+              Tavily
+            </label>
+            <Input
+              id="tavily"
+              type="password"
+              placeholder="tvly-..."
+              value={apiKeys.tavily || ""}
+              onChange={(e) => setApiKey("tavily", e.target.value)}
+              className="col-span-3"
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

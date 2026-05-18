@@ -145,7 +145,8 @@ export default function ChatPage() {
         const provider = getProviderForModel(selectedModel);
         const apiKey = apiKeys[provider.toLowerCase() as keyof typeof apiKeys];
         const serperApiKey = apiKeys.serper;
-        const response = await chatApi.sendMessage(chatId, content, selectedModel, provider, includeIllustrations, apiKey, serperApiKey);
+        const tavilyApiKey = apiKeys.tavily;
+        const response = await chatApi.sendMessage(chatId, content, selectedModel, provider, includeIllustrations, apiKey, serperApiKey, tavilyApiKey);
         // The API returns the saved message.
         // In a real implementation with WebSocket, we might get two messages back: the user's saved message (with real ID) and then the AI response.
         // Since we are using REST for now to send, and we want to see the AI response, we rely on the backend to trigger AI and eventually we'll fetch it or get it via WS.

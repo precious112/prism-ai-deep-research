@@ -49,7 +49,7 @@ export const addMessage = async (
   userId: string | null,
   content: string,
   role: string = "user",
-  config?: { model?: string; provider?: string; apiKey?: string; serperApiKey?: string; includeIllustrations?: boolean }
+  config?: { model?: string; provider?: string; apiKey?: string; serperApiKey?: string; tavilyApiKey?: string; includeIllustrations?: boolean }
 ) => {
   logger.info(`addMessage called for chat ${chatId} with role ${role}`);
 

@@ -3,7 +3,7 @@ import asyncio
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from src.tools.serper_tool import SerperTool
+from typing import Union
 
 class IllustrationDecision(BaseModel):
     # decision: Literal["search", "generate"]  <- Removed: We now strictly generate code.
@@ -13,17 +13,17 @@ class IllustrationDecision(BaseModel):
 class IllustrationTool:
     """
     Tool for generating illustrations.
-    
+
     TODO: Image search functionality is currently deactivated.
-    Reason: To use images from the internet, the agent should verify that the images are actually relevant 
-    and useful in the context of the draft. This requires multimodal capabilities (feeding the image 
-    to a vision model) to verify content. For now, we rely on code-generated visualizations (D3, P5, Three.js) 
+    Reason: To use images from the internet, the agent should verify that the images are actually relevant
+    and useful in the context of the draft. This requires multimodal capabilities (feeding the image
+    to a vision model) to verify content. For now, we rely on code-generated visualizations (D3, P5, Three.js)
     which are deterministic, interactive, and created by the model itself, ensuring relevance.
     """
-    
-    def __init__(self, model: BaseChatModel, serper_tool: SerperTool):
+
+    def __init__(self, model: BaseChatModel, search_tool):
         self.model = model
-        self.serper_tool = serper_tool
+        self.search_tool = search_tool
         self.decision_maker = model.with_structured_output(IllustrationDecision)
 
     async def illustrate(self, topic: str, description: str) -> Optional[Dict[str, Any]]:

@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
 
 from src.tools.serper_tool import SerperTool
+from src.tools.tavily_tool import TavilyTool
 from src.tools.crawler_tool import CrawlerTool
 from src.tools.illustration_tool import IllustrationTool
 
@@ -36,11 +37,14 @@ class IllustrationCheck(BaseModel):
     reason: str = Field(description="Reason for the decision")
 
 class ResearcherAgent:
-    def __init__(self, model: BaseChatModel, serper_api_key: str = None, event_callback=None, include_illustrations: bool = True):
+    def __init__(self, model: BaseChatModel, serper_api_key: str = None, tavily_api_key: str = None, event_callback=None, include_illustrations: bool = True):
         self.model = model
-        self.serper_tool = SerperTool(api_key=serper_api_key)
+        if tavily_api_key:
+            self.search_tool = TavilyTool(api_key=tavily_api_key)
+        else:
+            self.search_tool = SerperTool(api_key=serper_api_key)
         self.crawler_tool = CrawlerTool()
-        self.illustration_tool = IllustrationTool(model, self.serper_tool)
+        self.illustration_tool = IllustrationTool(model, self.search_tool)
         self.gap_analyzer = model.with_structured_output(GapAnalysis)
         self.illustration_checker = model.with_structured_output(IllustrationCheck)
         self.event_callback = event_callback
@@ -135,7 +139,7 @@ class ResearcherAgent:
                 })
 
             if tool == "search":
-                items = await loop.run_in_executor(None, self.serper_tool.search, target, 3)
+                items = await loop.run_in_executor(None, self.search_tool.search, target, 3)
                 results.extend(items)
                 if self.event_callback:
                     for item in items:
