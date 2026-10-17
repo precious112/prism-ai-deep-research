@@ -84,7 +84,7 @@ Get up and running in minutes using Docker.
 ### Prerequisites
 *   Docker & Docker Compose
 *   OpenAI API Key
-*   Serper API Key (for Google Search)
+*   Web search works without a search API key using [Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp). Existing Serper keys continue to use Google Search.
 
 ### Installation
 
@@ -106,6 +106,10 @@ Get up and running in minutes using Docker.
     ```
 
 Visit `http://localhost:3000` to start researching.
+
+The worker uses Parallel for web search and page excerpts when no Serper key is configured.
+Set `SEARCH_PROVIDER=parallel`, `serper`, or `disabled` in `core/docker.env` to choose
+explicitly or disable web access. See the [search configuration](./docs/01-getting-started/02-installation.md#search-configuration).
 
 ---
 
