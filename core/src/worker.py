@@ -76,7 +76,7 @@ async def run_parallel_research(model, plan, user_id, request_id, chat_id, publi
         })
         
         callback = create_callback(i, section.title)
-        agent = ResearcherAgent(model, serper_api_key=serper_api_key or Config.SERPER_API_KEY, event_callback=callback, include_illustrations=include_illustrations)
+        agent = ResearcherAgent(model, serper_api_key=serper_api_key or Config.SERPER_API_KEY, event_callback=callback, include_illustrations=include_illustrations, search_session_id=chat_id or request_id)
         result = await agent.run_research(section.title, section.description)
         
         # Save intermediate draft

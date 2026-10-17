@@ -10,7 +10,7 @@ The worker operates on a **"Plan-and-Execute"** architecture. It breaks down a u
 *   **Runtime**: Python 3.11+
 *   **Orchestration**: Custom AsyncIO Event Loop + Redis
 *   **Agent Framework**: LangChain & LangGraph
-*   **Search Tools**: Google Serper (Search), Custom Crawler (Direct URL)
+*   **Search Tools**: Parallel Search MCP (keyless search and page excerpts when unconfigured), Google Serper (configured keys), Custom Crawler (direct URLs with Serper). See [search configuration](../01-getting-started/02-installation.md#search-configuration).
 *   **Visualizations**: Custom Illustration Tool (D3, P5, Mermaid)
 
 ## 2. The Agent Workflow

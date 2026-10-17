@@ -27,7 +27,8 @@ The project uses multiple environment files for different services. You need to 
 
 *   **`core/docker.env`**: Configuration for the Python AI Worker.
     *   `OPENAI_API_KEY`: Required for LLM usage.
-    *   `SERPER_API_KEY`: Required for Google Search.
+    *   `SERPER_API_KEY`: Optional, selects Google Search through Serper when configured.
+    *   `SEARCH_PROVIDER`: Optional, defaults to `auto` (see [Search Configuration](#search-configuration)).
     *   `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `XAI_API_KEY`: Optional alternatives.
 *   **`api/docker.env`**: Configuration for the Express API.
     *   `DATABASE_URL`, `REDIS_URL`: Pre-configured for Docker.
@@ -36,7 +37,31 @@ The project uses multiple environment files for different services. You need to 
     *   `NEXT_PUBLIC_API_URL`: Should point to `http://localhost:3001/api`.
     *   `NEXT_PUBLIC_WS_URL`: Should point to `ws://localhost:8080/ws`.
 
-**Important**: You must add your API keys (OpenAI, Serper) to `core/docker.env` before starting.
+**Important**: Add an LLM API key (OpenAI or a supported alternative) to `core/docker.env` before starting. A search API key is optional.
+
+### Search Configuration
+
+The Python worker supports [Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
+over Streamable HTTP at `https://search.parallel.ai/mcp`. It provides web search in
+Fast mode and relevant excerpts from selected pages without an account or API key.
+
+Set `SEARCH_PROVIDER` in `core/docker.env` (or the worker process environment):
+
+| Value | Behavior |
+| --- | --- |
+| `auto` (default) | Use Serper if a user-supplied or environment `SERPER_API_KEY` is present; otherwise use Parallel. |
+| `parallel` | Use Parallel for search and page excerpts, even when a Serper key is configured. |
+| `serper` | Use Serper for Google Search and the existing direct webpage crawler. Requires a Serper key. |
+| `disabled` | Disable both web search and page fetching. The model can still write from its existing knowledge. |
+
+Keys saved in the client settings continue to reach the worker and take precedence
+over the environment Serper key. Provider failures do not switch to another provider.
+Parallel requests have a 30-second deadline and respect research cancellation.
+Service errors, including free-tier rate limits, stop the research task and are
+reported through the worker's existing error updates. Page fetching returns relevant
+excerpts, capped at 10,000 characters, rather than the complete webpage.
+Serper's image-search tool remains available explicitly; the existing illustration
+generation behavior is unchanged.
 
 ### 3. Build and Start Services
 

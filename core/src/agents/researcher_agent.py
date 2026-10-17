@@ -9,11 +9,13 @@ from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
 
 from src.tools.serper_tool import SerperTool
+from src.tools.parallel_tool import ParallelTool, resolve_search_provider
+from src.config import Config
 from src.tools.crawler_tool import CrawlerTool
 from src.tools.illustration_tool import IllustrationTool
 
 class Action(BaseModel):
-    tool: Literal["search", "crawl"] = Field(description="The tool to use: 'search' for Google, 'crawl' for visiting a specific URL")
+    tool: Literal["search", "crawl"] = Field(description="The tool to use: 'search' for web search, 'crawl' for visiting a specific URL")
     query_or_url: str = Field(description="The search query or the URL to crawl")
 
 class ResearcherState(TypedDict):
@@ -36,9 +38,14 @@ class IllustrationCheck(BaseModel):
     reason: str = Field(description="Reason for the decision")
 
 class ResearcherAgent:
-    def __init__(self, model: BaseChatModel, serper_api_key: str = None, event_callback=None, include_illustrations: bool = True):
+    def __init__(self, model: BaseChatModel, serper_api_key: str = None, event_callback=None, include_illustrations: bool = True, search_provider: str = None, search_session_id: str = None):
         self.model = model
         self.serper_tool = SerperTool(api_key=serper_api_key)
+        self.search_provider = resolve_search_provider(
+            self.serper_tool.api_key,
+            Config.SEARCH_PROVIDER if search_provider is None else search_provider,
+        )
+        self.parallel_tool = ParallelTool(session_id=search_session_id) if self.search_provider == "parallel" else None
         self.crawler_tool = CrawlerTool()
         self.illustration_tool = IllustrationTool(model, self.serper_tool)
         self.gap_analyzer = model.with_structured_output(GapAnalysis)
@@ -93,7 +100,7 @@ class ResearcherAgent:
             }
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are a research supervisor. Analyze the current draft. If you need more info, decide whether to SEARCH Google or CRAWL a specific URL (if you found one previously)."),
+            ("system", "You are a research supervisor. Analyze the current draft. If you need more info, decide whether to SEARCH the web or CRAWL a specific URL (if you found one previously)."),
             ("user", "Topic: {topic}\nDescription: {description}\n\nCurrent Draft:\n{draft}\n\nIs this complete? If not, what actions should we take?")
         ])
         
@@ -121,6 +128,8 @@ class ResearcherAgent:
 
     async def search_node(self, state: ResearcherState):
         actions = state.get("pending_actions", [])
+        if self.search_provider == "disabled":
+            return {"search_results": []}
         results = []
         loop = asyncio.get_running_loop()
 
@@ -135,14 +144,20 @@ class ResearcherAgent:
                 })
 
             if tool == "search":
-                items = await loop.run_in_executor(None, self.serper_tool.search, target, 3)
+                if self.parallel_tool:
+                    items = await self.parallel_tool.search(target, 3)
+                else:
+                    items = await loop.run_in_executor(None, self.serper_tool.search, target, 3)
                 results.extend(items)
                 if self.event_callback:
                     for item in items:
                         self.event_callback("source_found", {"title": item.get("title"), "url": item.get("url")})
             
             elif tool == "crawl":
-                content = await loop.run_in_executor(None, self.crawler_tool.crawl, target)
+                if self.parallel_tool:
+                    content = await self.parallel_tool.crawl(target)
+                else:
+                    content = await loop.run_in_executor(None, self.crawler_tool.crawl, target)
                 results.append({"title": f"Crawl: {target}", "url": target, "content": content})
                 if self.event_callback:
                     self.event_callback("source_found", {"title": f"Crawl: {target}", "url": target})
